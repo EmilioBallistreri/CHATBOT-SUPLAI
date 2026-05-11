@@ -17,6 +17,7 @@ interface WebhookResponse {
   message: string
   ticket_number?: string
   ticket_url?: string
+  resolved?: string
 }
 
 export function Chatbot() {
@@ -24,16 +25,20 @@ export function Chatbot() {
     {
       id: "welcome",
       role: "bot",
-      content: "Hello! How can I help you today?",
+      content: "¡Hola! 👋 ¿Cómo puedo ayudarte hoy?",
     },
   ])
+
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+    })
   }
 
   useEffect(() => {
@@ -61,11 +66,19 @@ export function Chatbot() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ message: userMessage.content }),
+          body: JSON.stringify({
+            message: userMessage.content,
+          }),
         }
       )
 
       const data: WebhookResponse = await response.json()
+
+      console.log("========== RESPUESTA DEL BOT ==========")
+      console.log(data.message)
+
+      console.log("========== JSON COMPLETO ==========")
+      console.log(data)
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -77,11 +90,14 @@ export function Chatbot() {
 
       setMessages((prev) => [...prev, botMessage])
     } catch (error) {
+      console.error("ERROR:", error)
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "bot",
-        content: "Sorry, something went wrong. Please try again.",
+        content: "Lo siento, ocurrió un error. Intenta nuevamente.",
       }
+
       setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
@@ -89,7 +105,9 @@ export function Chatbot() {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
@@ -98,20 +116,26 @@ export function Chatbot() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
+      {/* HEADER */}
       <header className="sticky top-0 z-10 border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary">
             <Bot className="h-5 w-5 text-primary-foreground" />
           </div>
+
           <div>
-            <h1 className="font-semibold text-foreground">Support Assistant</h1>
-            <p className="text-sm text-muted-foreground">Always here to help</p>
+            <h1 className="font-semibold text-foreground">
+              Support Assistant
+            </h1>
+
+            <p className="text-sm text-muted-foreground">
+              Siempre aquí para ayudarte
+            </p>
           </div>
         </div>
       </header>
 
-      {/* Messages */}
+      {/* MENSAJES */}
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl space-y-4 px-4 py-6">
           {messages.map((message) => (
@@ -119,9 +143,12 @@ export function Chatbot() {
               key={message.id}
               className={cn(
                 "flex gap-3",
-                message.role === "user" ? "flex-row-reverse" : "flex-row"
+                message.role === "user"
+                  ? "flex-row-reverse"
+                  : "flex-row"
               )}
             >
+              {/* ICONO */}
               <div
                 className={cn(
                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
@@ -136,28 +163,38 @@ export function Chatbot() {
                   <Bot className="h-4 w-4 text-primary-foreground" />
                 )}
               </div>
+
+              {/* BURBUJA */}
               <div
                 className={cn(
-                  "max-w-[80%] space-y-2 rounded-2xl px-4 py-3",
+                  "max-w-[80%] rounded-2xl px-4 py-3",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-card border border-border text-card-foreground"
+                    : "border border-border bg-card text-card-foreground"
                 )}
               >
-                <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
-                
-                {/* Ticket Info */}
+                {/* TEXTO */}
+                <div className="whitespace-pre-line break-words text-sm leading-relaxed">
+                  {message.content}
+                </div>
+
+                {/* TICKET */}
                 {(message.ticketNumber || message.ticketUrl) && (
-                  <div className="mt-3 rounded-lg bg-muted p-3 space-y-2">
+                  <div className="mt-3 space-y-2 rounded-lg bg-muted p-3">
                     {message.ticketNumber && (
                       <div className="flex items-center gap-2 text-sm">
                         <Ticket className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Ticket:</span>
+
+                        <span className="text-muted-foreground">
+                          Ticket:
+                        </span>
+
                         <span className="font-mono font-medium text-foreground">
                           {message.ticketNumber}
                         </span>
                       </div>
                     )}
+
                     {message.ticketUrl && (
                       <a
                         href={message.ticketUrl}
@@ -166,7 +203,7 @@ export function Chatbot() {
                         className="flex items-center gap-2 text-sm text-primary hover:underline"
                       >
                         <ExternalLink className="h-4 w-4" />
-                        View Ticket
+                        Ver Ticket
                       </a>
                     )}
                   </div>
@@ -175,23 +212,28 @@ export function Chatbot() {
             </div>
           ))}
 
-          {/* Loading indicator */}
+          {/* LOADING */}
           {isLoading && (
             <div className="flex gap-3">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary">
                 <Bot className="h-4 w-4 text-primary-foreground" />
               </div>
+
               <div className="flex items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3">
                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Thinking...</span>
+
+                <span className="text-sm text-muted-foreground">
+                  Pensando...
+                </span>
               </div>
             </div>
           )}
+
           <div ref={messagesEndRef} />
         </div>
       </main>
 
-      {/* Input */}
+      {/* INPUT */}
       <footer className="sticky bottom-0 border-t border-border bg-card/80 backdrop-blur-sm">
         <div className="mx-auto max-w-3xl px-4 py-4">
           <div className="flex items-center gap-3 rounded-full border border-border bg-background px-4 py-2 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
@@ -201,10 +243,11 @@ export function Chatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message..."
+              placeholder="Escribe tu mensaje..."
               disabled={isLoading}
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             />
+
             <Button
               onClick={sendMessage}
               disabled={!input.trim() || isLoading}
@@ -216,11 +259,15 @@ export function Chatbot() {
               ) : (
                 <Send className="h-4 w-4" />
               )}
-              <span className="sr-only">Send message</span>
+
+              <span className="sr-only">
+                Enviar mensaje
+              </span>
             </Button>
           </div>
+
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Press Enter to send your message
+            Presiona Enter para enviar tu mensaje
           </p>
         </div>
       </footer>
