@@ -92,7 +92,13 @@ export function Chatbot() {
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "bot",
-        content: data.message,
+
+        content: data.message
+          .replace(/\r\n/g, "\n")
+          .replace(/\n{3,}/g, "\n\n")
+          .replace(/[ \t]+\n/g, "\n")
+          .trim(),
+
         ticketNumber: data.ticket_number,
         ticketUrl: data.ticket_url,
       }
@@ -190,7 +196,6 @@ export function Chatbot() {
                     break-words
                     text-sm
                     leading-7
-                    space-y-2
                   "
                 >
                   {message.content}
