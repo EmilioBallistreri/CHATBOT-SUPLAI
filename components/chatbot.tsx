@@ -1,7 +1,15 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Send, Bot, User, Loader2, ExternalLink, Ticket } from "lucide-react"
+import {
+  Send,
+  Bot,
+  User,
+  Loader2,
+  ExternalLink,
+  Ticket,
+} from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -25,7 +33,8 @@ export function Chatbot() {
     {
       id: "welcome",
       role: "bot",
-      content: "¡Hola! 👋 ¿Cómo puedo ayudarte hoy?",
+      content:
+        "¡Hola! 👋\n\nSoy el asistente virtual de SUPLAI.\n¿En qué puedo ayudarte hoy?",
     },
   ])
 
@@ -95,7 +104,8 @@ export function Chatbot() {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "bot",
-        content: "Lo siento, ocurrió un error. Intenta nuevamente.",
+        content:
+          "Lo siento, ocurrió un error al procesar tu solicitud.\n\nIntenta nuevamente en unos segundos.",
       }
 
       setMessages((prev) => [...prev, errorMessage])
@@ -125,7 +135,7 @@ export function Chatbot() {
 
           <div>
             <h1 className="font-semibold text-foreground">
-              Support Assistant
+              SUPLAI Assistant
             </h1>
 
             <p className="text-sm text-muted-foreground">
@@ -137,7 +147,7 @@ export function Chatbot() {
 
       {/* MENSAJES */}
       <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl space-y-4 px-4 py-6">
+        <div className="mx-auto max-w-3xl space-y-5 px-4 py-6">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -167,20 +177,28 @@ export function Chatbot() {
               {/* BURBUJA */}
               <div
                 className={cn(
-                  "max-w-[80%] rounded-2xl px-4 py-3",
+                  "max-w-[80%] rounded-2xl px-5 py-4",
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
                     : "border border-border bg-card text-card-foreground"
                 )}
               >
                 {/* TEXTO */}
-                <div className="whitespace-pre-line break-words text-sm leading-relaxed">
+                <div
+                  className="
+                    whitespace-pre-line
+                    break-words
+                    text-sm
+                    leading-7
+                    space-y-2
+                  "
+                >
                   {message.content}
                 </div>
 
                 {/* TICKET */}
                 {(message.ticketNumber || message.ticketUrl) && (
-                  <div className="mt-3 space-y-2 rounded-lg bg-muted p-3">
+                  <div className="mt-4 space-y-2 rounded-xl bg-muted p-3">
                     {message.ticketNumber && (
                       <div className="flex items-center gap-2 text-sm">
                         <Ticket className="h-4 w-4 text-muted-foreground" />
@@ -190,7 +208,7 @@ export function Chatbot() {
                         </span>
 
                         <span className="font-mono font-medium text-foreground">
-                          {message.ticketNumber}
+                          #{message.ticketNumber}
                         </span>
                       </div>
                     )}
@@ -200,7 +218,7 @@ export function Chatbot() {
                         href={message.ticketUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm text-primary hover:underline"
+                        className="flex items-center gap-2 text-sm text-primary transition-opacity hover:opacity-80"
                       >
                         <ExternalLink className="h-4 w-4" />
                         Ver Ticket
