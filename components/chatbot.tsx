@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import {
   Send,
   Bot,
-  User,
+ User,
   Loader2,
   ExternalLink,
   Ticket,
@@ -53,6 +53,28 @@ export function Chatbot() {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  const formatMessageContent = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+
+    return text.split(urlRegex).map((part, index) => {
+      if (urlRegex.test(part)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline break-all hover:opacity-80"
+          >
+            {part}
+          </a>
+        )
+      }
+
+      return part
+    })
+  }
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
@@ -198,7 +220,7 @@ export function Chatbot() {
                     leading-7
                   "
                 >
-                  {message.content}
+                  {formatMessageContent(message.content)}
                 </div>
 
                 {/* TICKET */}
